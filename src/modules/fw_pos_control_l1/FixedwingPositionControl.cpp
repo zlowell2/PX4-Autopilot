@@ -214,8 +214,8 @@ FixedwingPositionControl::manual_control_setpoint_poll()
 		/* Alternate stick allocation (similar concept as for multirotor systems:
 		 * demanding up/down with the throttle stick, and move faster/break with the pitch one.
 		 */
-		_manual_control_setpoint_altitude = -(_manual_control_setpoint.z * 2.f - 1.f);
-		_manual_control_setpoint_airspeed = _manual_control_setpoint.x / 2.f + 0.5f;
+		_manual_control_setpoint_altitude = -_manual_control_setpoint.z;
+		_manual_control_setpoint_airspeed = _manual_control_setpoint.x;
 	}
 }
 
@@ -244,23 +244,10 @@ FixedwingPositionControl::vehicle_attitude_poll()
 float
 FixedwingPositionControl::get_demanded_airspeed()
 {
-	float altctrl_airspeed = 0;
-
 	// neutral throttle corresponds to trim airspeed
-	if (_manual_control_setpoint_airspeed < 0.5f) {
-		// lower half of throttle is min to trim airspeed
-		altctrl_airspeed = _param_fw_airspd_min.get() +
-				   (_param_fw_airspd_trim.get() - _param_fw_airspd_min.get()) *
-				   _manual_control_setpoint_airspeed * 2;
-
-	} else {
-		// upper half of throttle is trim to max airspeed
-		altctrl_airspeed = _param_fw_airspd_trim.get() +
-				   (_param_fw_airspd_max.get() - _param_fw_airspd_trim.get()) *
-				   (_manual_control_setpoint_airspeed * 2 - 1);
-	}
-
-	return altctrl_airspeed;
+	return math::gradual3(_manual_control_setpoint_airspeed,
+			      -1.f, 0.f, 1.f,
+			      _param_fw_airspd_min.get(), _param_fw_airspd_trim.get(), _param_fw_airspd_max.get());
 }
 
 float
@@ -922,7 +909,7 @@ FixedwingPositionControl::control_position(const hrt_abstime &now, const Vector2
 		/* throttle limiting */
 		throttle_max = _param_fw_thr_max.get();
 
-		if (_vehicle_land_detected.landed && (fabsf(_manual_control_setpoint_airspeed) < THROTTLE_THRESH)) {
+		if (_vehicle_land_detected.landed && (_manual_control_setpoint_airspeed < THROTTLE_THRESH)) {
 			throttle_max = 0.0f;
 		}
 
@@ -1024,7 +1011,7 @@ FixedwingPositionControl::control_position(const hrt_abstime &now, const Vector2
 		/* throttle limiting */
 		throttle_max = _param_fw_thr_max.get();
 
-		if (_vehicle_land_detected.landed && (fabsf(_manual_control_setpoint_airspeed) < THROTTLE_THRESH)) {
+		if (_vehicle_land_detected.landed && (_manual_control_setpoint_airspeed < THROTTLE_THRESH)) {
 			throttle_max = 0.0f;
 		}
 
