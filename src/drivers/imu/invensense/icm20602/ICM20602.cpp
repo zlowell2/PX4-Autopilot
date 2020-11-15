@@ -108,14 +108,15 @@ void ICM20602::print_status()
 
 int ICM20602::probe()
 {
-	const uint8_t whoami = RegisterRead(Register::WHO_AM_I);
+	for (int i = 0; i < 20; i++) {
+		const uint8_t whoami = RegisterRead(Register::WHO_AM_I);
 
-	if (whoami != WHOAMI) {
-		DEVICE_DEBUG("unexpected WHO_AM_I 0x%02x", whoami);
-		return PX4_ERROR;
+		if (whoami == WHOAMI) {
+			return PX4_OK;
+		}
 	}
 
-	return PX4_OK;
+	return PX4_ERROR;
 }
 
 void ICM20602::RunImpl()
