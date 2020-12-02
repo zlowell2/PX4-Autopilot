@@ -94,6 +94,8 @@ static struct work_s autosave_work {};
 static volatile bool autosave_scheduled = false;
 static bool autosave_disabled = false;
 
+static struct work_s notify_work {};
+
 /**
  * Array of static parameter info.
  */
@@ -290,12 +292,11 @@ param_find_changed(param_t param)
 	return s;
 }
 
-static void
-_param_notify_changes()
+static void param_notify_worker(void *arg)
 {
-	parameter_update_s pup = {};
-	pup.timestamp = hrt_absolute_time();
+	parameter_update_s pup{};
 	pup.instance = param_instance++;
+	pup.timestamp = hrt_absolute_time();
 
 	/*
 	 * If we don't have a handle to our topic, create one now; otherwise
@@ -312,7 +313,7 @@ _param_notify_changes()
 void
 param_notify_changes()
 {
-	_param_notify_changes();
+	work_queue(LPWORK, &notify_work, (worker_t)&param_notify_worker, nullptr, USEC2TICK(10'000));
 }
 
 param_t
@@ -736,7 +737,7 @@ out:
 	 * a thing has been set.
 	 */
 	if (params_changed && notify_changes) {
-		_param_notify_changes();
+		param_notify_changes();
 	}
 
 	return result;
@@ -823,7 +824,7 @@ static int param_reset_internal(param_t param, bool notify = true)
 	param_unlock_writer();
 
 	if (s != nullptr && notify) {
-		_param_notify_changes();
+		param_notify_changes();
 	}
 
 	return (!param_found);
@@ -850,7 +851,7 @@ param_reset_all_internal(bool auto_save)
 
 	param_unlock_writer();
 
-	_param_notify_changes();
+	param_notify_changes();
 }
 
 void
