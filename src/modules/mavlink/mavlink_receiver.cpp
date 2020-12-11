@@ -2060,14 +2060,12 @@ MavlinkReceiver::handle_message_manual_control(mavlink_message_t *msg)
 
 	} else {
 		manual_control_setpoint_s manual_control_setpoint{};
-
 		manual_control_setpoint.timestamp = hrt_absolute_time();
-		manual_control_setpoint.x = man.x / 1e3f;
-		manual_control_setpoint.y = man.y / 1e3f;
-		manual_control_setpoint.z = man.z / 1e3f;
-		manual_control_setpoint.r = man.r / 1e3f;
+		manual_control_setpoint.xyzr[0] = man.x / 1e3f;
+		manual_control_setpoint.xyzr[1] = man.y / 1e3f;
+		manual_control_setpoint.xyzr[2] = (man.z / 1e3f * 2.f) - 1.f; // backwards compatibility QGC
+		manual_control_setpoint.xyzr[3] = man.r / 1e3f;
 		manual_control_setpoint.data_source = manual_control_setpoint_s::SOURCE_MAVLINK_0 + _mavlink->get_instance_id();
-
 		_manual_control_setpoint_pub.publish(manual_control_setpoint);
 	}
 }

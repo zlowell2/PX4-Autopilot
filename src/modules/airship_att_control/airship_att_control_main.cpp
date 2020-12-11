@@ -91,9 +91,9 @@ AirshipAttitudeControl::publish_actuator_controls()
 
 	} else {
 		_actuators.control[0] = 0.0f;
-		_actuators.control[1] = _manual_control_setpoint.x;
-		_actuators.control[2] = _manual_control_setpoint.r;
-		_actuators.control[3] = (_manual_control_setpoint.z + 1.f) * .5f;
+		_actuators.control[1] = _manual_control_setpoint.xyzr[0];
+		_actuators.control[2] = _manual_control_setpoint.xyzr[3];
+		_actuators.control[3] = (_manual_control_setpoint.xyzr[2] + 1.f) * .5f;
 	}
 
 	// note: _actuators.timestamp_sample is set in AirshipAttitudeControl::Run()

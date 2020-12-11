@@ -207,15 +207,15 @@ FixedwingPositionControl::manual_control_setpoint_poll()
 {
 	_manual_control_setpoint_sub.update(&_manual_control_setpoint);
 
-	_manual_control_setpoint_altitude = _manual_control_setpoint.x;
-	_manual_control_setpoint_airspeed = _manual_control_setpoint.z;
+	_manual_control_setpoint_altitude = _manual_control_setpoint.xyzr[0];
+	_manual_control_setpoint_airspeed = _manual_control_setpoint.xyzr[2];
 
 	if (_param_fw_posctl_inv_st.get()) {
 		/* Alternate stick allocation (similar concept as for multirotor systems:
 		 * demanding up/down with the throttle stick, and move faster/break with the pitch one.
 		 */
-		_manual_control_setpoint_altitude = -_manual_control_setpoint.z;
-		_manual_control_setpoint_airspeed = _manual_control_setpoint.x;
+		_manual_control_setpoint_altitude = -_manual_control_setpoint.xyzr[2];
+		_manual_control_setpoint_airspeed = _manual_control_setpoint.xyzr[0];
 	}
 }
 
@@ -889,7 +889,7 @@ FixedwingPositionControl::control_position(const hrt_abstime &now, const Vector2
 
 			/* reset setpoints from other modes (auto) otherwise we won't
 			 * level out without new manual input */
-			_att_sp.roll_body = _manual_control_setpoint.y * radians(_param_fw_man_r_max.get());
+			_att_sp.roll_body = _manual_control_setpoint.xyzr[1] * radians(_param_fw_man_r_max.get());
 			_att_sp.yaw_body = 0;
 		}
 
@@ -925,8 +925,8 @@ FixedwingPositionControl::control_position(const hrt_abstime &now, const Vector2
 					   tecs_status_s::TECS_MODE_NORMAL);
 
 		/* heading control */
-		if (fabsf(_manual_control_setpoint.y) < HDG_HOLD_MAN_INPUT_THRESH &&
-		    fabsf(_manual_control_setpoint.r) < HDG_HOLD_MAN_INPUT_THRESH) {
+		if (fabsf(_manual_control_setpoint.xyzr[1]) < HDG_HOLD_MAN_INPUT_THRESH &&
+		    fabsf(_manual_control_setpoint.xyzr[3]) < HDG_HOLD_MAN_INPUT_THRESH) {
 
 			/* heading / roll is zero, lock onto current heading */
 			if (fabsf(_vehicle_rates_sub.get().xyz[2]) < HDG_HOLD_YAWRATE_THRESH && !_yaw_lock_engaged) {
@@ -977,12 +977,12 @@ FixedwingPositionControl::control_position(const hrt_abstime &now, const Vector2
 			}
 		}
 
-		if (!_yaw_lock_engaged || fabsf(_manual_control_setpoint.y) >= HDG_HOLD_MAN_INPUT_THRESH ||
-		    fabsf(_manual_control_setpoint.r) >= HDG_HOLD_MAN_INPUT_THRESH) {
+		if (!_yaw_lock_engaged || fabsf(_manual_control_setpoint.xyzr[1]) >= HDG_HOLD_MAN_INPUT_THRESH ||
+		    fabsf(_manual_control_setpoint.xyzr[3]) >= HDG_HOLD_MAN_INPUT_THRESH) {
 
 			_hdg_hold_enabled = false;
 			_yaw_lock_engaged = false;
-			_att_sp.roll_body = _manual_control_setpoint.y * radians(_param_fw_man_r_max.get());
+			_att_sp.roll_body = _manual_control_setpoint.xyzr[1] * radians(_param_fw_man_r_max.get());
 			_att_sp.yaw_body = 0;
 		}
 
@@ -1026,7 +1026,7 @@ FixedwingPositionControl::control_position(const hrt_abstime &now, const Vector2
 					   pitch_limit_min,
 					   tecs_status_s::TECS_MODE_NORMAL);
 
-		_att_sp.roll_body = _manual_control_setpoint.y * radians(_param_fw_man_r_max.get());
+		_att_sp.roll_body = _manual_control_setpoint.xyzr[1] * radians(_param_fw_man_r_max.get());
 		_att_sp.yaw_body = 0;
 
 	} else {
