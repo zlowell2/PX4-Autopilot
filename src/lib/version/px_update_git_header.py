@@ -95,22 +95,6 @@ header += """
            git_branch_name=git_branch_name)
 
 
-# ECL
-if (os.path.exists('src/lib/ecl/.git')):
-    ecl_git_tag = subprocess.check_output('git describe --always --tags --dirty'.split(),
-                                  cwd='src/lib/ecl', stderr=subprocess.STDOUT).decode('utf-8')
-
-    ecl_git_version = subprocess.check_output('git rev-parse --verify HEAD'.split(),
-                                      cwd='src/lib/ecl', stderr=subprocess.STDOUT).decode('utf-8').strip()
-    ecl_git_version_short = ecl_git_version[0:16]
-
-    header += """
-#define ECL_LIB_GIT_VERSION_STR  "{ecl_git_version}"
-#define ECL_LIB_GIT_VERSION_BINARY 0x{ecl_git_version_short}
-""".format(ecl_git_version=ecl_git_version,
-           ecl_git_version_short=ecl_git_version_short)
-
-
 # Mavlink
 if (os.path.exists('mavlink/include/mavlink/v2.0/.git')):
     mavlink_git_version = subprocess.check_output('git rev-parse --verify HEAD'.split(),

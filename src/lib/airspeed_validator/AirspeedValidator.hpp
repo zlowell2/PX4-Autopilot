@@ -39,9 +39,9 @@
 #pragma once
 
 #include <airspeed/airspeed.h>
-#include <ecl/airdata/WindEstimator.hpp>
+#include <lib/airdata/WindEstimator.hpp>
 #include <uORB/topics/wind_estimate.h>
-
+#include <drivers/drv_hrt.h>
 
 using matrix::Dcmf;
 using matrix::Quatf;

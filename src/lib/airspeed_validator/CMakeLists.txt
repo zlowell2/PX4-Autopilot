@@ -38,4 +38,4 @@ target_include_directories(AirspeedValidator
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(AirspeedValidator PUBLIC ecl_airdata)
+target_link_libraries(AirspeedValidator PUBLIC airdata)

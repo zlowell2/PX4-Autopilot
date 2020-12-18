@@ -44,7 +44,7 @@
 #include <commander/px4_custom_mode.h>
 #include <conversion/rotation.h>
 #include <drivers/drv_rc_input.h>
-#include <ecl/geo/geo.h>
+#include <lib/geo/geo.h>
 #include <systemlib/px4_macros.h>
 
 #include <math.h>

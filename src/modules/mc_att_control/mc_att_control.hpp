@@ -42,6 +42,7 @@
 #include <px4_platform_common/module_params.h>
 #include <px4_platform_common/posix.h>
 #include <px4_platform_common/px4_work_queue/WorkItem.hpp>
+#include <lib/mathlib/math/filter/AlphaFilter.hpp>
 #include <uORB/Publication.hpp>
 #include <uORB/Subscription.hpp>
 #include <uORB/SubscriptionCallback.hpp>
@@ -54,7 +55,6 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_land_detected.h>
 #include <vtol_att_control/vtol_type.h>
-#include <lib/ecl/AlphaFilter/AlphaFilter.hpp>
 
 #include <AttitudeControl.hpp>
 

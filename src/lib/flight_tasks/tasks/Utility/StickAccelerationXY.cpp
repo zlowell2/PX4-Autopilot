@@ -37,7 +37,7 @@
 
 #include "StickAccelerationXY.hpp"
 
-#include <ecl/geo/geo.h>
+#include <lib/geo/geo.h>
 #include "Sticks.hpp"
 
 using namespace matrix;

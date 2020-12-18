@@ -41,7 +41,7 @@
 
 #include <px4_platform_common/module_params.h>
 #include <float.h> // TODO add this include to AlphaFilter since it's used there
-#include <lib/ecl/AlphaFilter/AlphaFilter.hpp>
+#include <lib/mathlib/math/filter/AlphaFilter.hpp>
 #include <matrix/math.hpp>
 
 #include "SlewRate.hpp"

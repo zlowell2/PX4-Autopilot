@@ -46,7 +46,7 @@ px4_add_module(
 		PositionControl
 		controllib
 		FlightTasks
-		ecl_geo
+		geo
 		WeatherVane
 		CollisionPrevention
 		Takeoff

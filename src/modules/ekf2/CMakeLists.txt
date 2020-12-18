@@ -31,6 +31,7 @@
 #
 #############################################################################
 
+add_subdirectory(EKF)
 add_subdirectory(Utility)
 
 px4_add_module(
@@ -45,7 +46,7 @@ px4_add_module(
 		EKF2Selector.hpp
 	DEPENDS
 		ecl_EKF
-		ecl_geo
+		geo
 		perf
 		EKF2Utility
 		px4_work_queue

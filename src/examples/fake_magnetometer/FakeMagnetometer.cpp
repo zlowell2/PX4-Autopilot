@@ -33,7 +33,7 @@
 
 #include "FakeMagnetometer.hpp"
 
-#include <lib/ecl/geo_lookup/geo_mag_declination.h>
+#include <lib/geo_lookup/geo_mag_declination.h>
 
 using namespace matrix;
 using namespace time_literals;

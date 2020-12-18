@@ -42,11 +42,13 @@
 
 #include "EKF2Selector.hpp"
 
+#include "EKF/ekf.h"
+
 #include <float.h>
+
 
 #include <containers/LockGuard.hpp>
 #include <drivers/drv_hrt.h>
-#include <lib/ecl/EKF/ekf.h>
 #include <lib/mathlib/mathlib.h>
 #include <lib/perf/perf_counter.h>
 #include <px4_platform_common/defines.h>

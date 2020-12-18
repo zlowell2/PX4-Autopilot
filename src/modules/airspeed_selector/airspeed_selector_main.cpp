@@ -32,7 +32,7 @@
  ****************************************************************************/
 
 #include <drivers/drv_hrt.h>
-#include <ecl/airdata/WindEstimator.hpp>
+#include <lib/airdata/WindEstimator.hpp>
 #include <matrix/math.hpp>
 #include <parameters/param.h>
 #include <perf/perf_counter.h>

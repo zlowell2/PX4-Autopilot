@@ -33,6 +33,7 @@
 
 px4_add_git_submodule(TARGET git_matrix PATH "matrix")
 
+add_subdirectory(airdata)
 add_subdirectory(airspeed)
 add_subdirectory(airspeed_validator)
 add_subdirectory(avoidance)
@@ -44,8 +45,9 @@ add_subdirectory(collision_prevention)
 add_subdirectory(controllib)
 add_subdirectory(conversion)
 add_subdirectory(drivers)
-add_subdirectory(ecl)
 add_subdirectory(flight_tasks)
+add_subdirectory(geo)
+add_subdirectory(geo_lookup)
 add_subdirectory(hysteresis)
 add_subdirectory(l1)
 add_subdirectory(landing_slope)

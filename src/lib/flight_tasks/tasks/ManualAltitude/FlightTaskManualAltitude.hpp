@@ -41,8 +41,7 @@
 
 #include "FlightTask.hpp"
 #include "Sticks.hpp"
-#include <lib/ecl/AlphaFilter/AlphaFilter.hpp>
-#include <uORB/Subscription.hpp>
+#include <lib/mathlib/math/filter/AlphaFilter.hpp>
 
 class FlightTaskManualAltitude : public FlightTask
 {
@@ -129,8 +128,6 @@ private:
 	 * To ensure a slowdown to land speed before hitting the ground.
 	 */
 	void _respectGroundSlowdown();
-
-	void setGearAccordingToSwitch();
 
 	float _yawspeed_filter_state{}; /**< state of low-pass filter in rad/s */
 	uint8_t _reset_counter = 0; /**< counter for estimator resets in z-direction */
