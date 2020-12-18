@@ -50,7 +50,6 @@ px4_add_module(
 		gpsfailure.cpp
 		follow_target.cpp
 	DEPENDS
-		git_ecl
 		ecl_geo
 		landing_slope
 	)
