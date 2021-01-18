@@ -32,81 +32,33 @@
  ****************************************************************************/
 
 /**
- * @file ActuatorEffectiveness.hpp
+ * @file ActuatorEffectivenessPlane.cpp
  *
- * Interface for Actuator Effectiveness
+ * Actuator effectiveness for a plane.
  *
- * @author Julien Lecoeur <julien.lecoeur@gmail.com>
  */
 
-#pragma once
+#include "ActuatorEffectivenessPlane.hpp"
 
-#include <ControlAllocation/ControlAllocation.hpp>
-
-#include <matrix/matrix/math.hpp>
-#include <uORB/topics/vehicle_actuator_setpoint.h>
-
-class ActuatorEffectiveness
+ActuatorEffectivenessPlane::ActuatorEffectivenessPlane()
 {
-public:
-	ActuatorEffectiveness() = default;
-	virtual ~ActuatorEffectiveness() = default;
+	updateAirspeedScaling(1.f);
+}
 
-	static constexpr uint8_t NUM_ACTUATORS = ControlAllocation::NUM_ACTUATORS;
-	static constexpr uint8_t NUM_AXES = ControlAllocation::NUM_AXES;
+void ActuatorEffectivenessPlane::updateAirspeedScaling(const float airspeed_scaling)
+{
+	_updated = true;
 
-	enum class FlightPhase {
-		HOVER_FLIGHT = 0,
-		FORWARD_FLIGHT = 1,
-		TRANSITION_HF_TO_FF = 2,
-		TRANSITION_FF_TO_HF = 3
+	const float SC = 1.0f / (airspeed_scaling * airspeed_scaling);
+
+	const float B_plane[NUM_AXES][NUM_ACTUATORS] = {
+		{ 0.f, 0.f, 0.f,       0.f, 0.f, -0.5f * SC, 0.5f * SC, 0.f,       0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f},
+		{ 0.f, 0.f, 0.f,       0.f, 0.f,  0.f,       0.f,       0.5f * SC, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f},
+		{ 0.f, 0.f, 0.5f * SC, 0.f, 0.f,  0.f,       0.f,       0.f,       0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f},
+		{ 0.f, 0.f, 0.f,       0.f, 1.f,  0.f,       0.f,       0.f,       0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f},
+		{ 0.f, 0.f, 0.f,       0.f, 0.f,  0.f,       0.f,       0.f,       0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f},
+		{ 0.f, 0.f, 0.f,       0.f, 0.f,  0.f,       0.f,       0.f,       0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}
 	};
 
-	/**
-	 * Set the current flight phase
-	 *
-	 * @param Flight phase
-	 */
-	virtual void setFlightPhase(const FlightPhase &flight_phase)
-	{
-		_flight_phase = flight_phase;
-	}
-
-	virtual void updateAirspeedScaling(const float airspeed_scaling) {};
-
-	/**
-	 * Get the control effectiveness matrix if updated
-	 *
-	 * @return true if updated and matrix is set
-	 */
-	virtual bool getEffectivenessMatrix(matrix::Matrix<float, NUM_AXES, NUM_ACTUATORS> &matrix) = 0;
-
-	/**
-	 * Get the actuator trims
-	 *
-	 * @return Actuator trims
-	 */
-	const matrix::Vector<float, NUM_ACTUATORS> &getActuatorTrim() const
-	{
-		return _trim;
-	}
-
-	/**
-	 * Get the current flight phase
-	 *
-	 * @return Flight phase
-	 */
-	const FlightPhase &getFlightPhase() const
-	{
-		return _flight_phase;
-	}
-
-	/**
-	 * Get the number of actuators
-	 */
-	virtual int numActuators() const = 0;
-
-protected:
-	matrix::Vector<float, NUM_ACTUATORS> _trim;			///< Actuator trim
-	FlightPhase _flight_phase{FlightPhase::HOVER_FLIGHT};		///< Current flight phase
-};
+	_effectiveness = matrix::Matrix<float, NUM_AXES, NUM_ACTUATORS>(B_plane);
+}

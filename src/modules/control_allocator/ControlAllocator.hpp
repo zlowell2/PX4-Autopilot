@@ -45,6 +45,7 @@
 #include <ActuatorEffectivenessMultirotor.hpp>
 #include <ActuatorEffectivenessStandardVTOL.hpp>
 #include <ActuatorEffectivenessTiltrotorVTOL.hpp>
+#include <ActuatorEffectivenessPlane.hpp>
 
 #include <ControlAllocation.hpp>
 #include <ControlAllocationPseudoInverse.hpp>
@@ -60,7 +61,7 @@
 #include <uORB/Subscription.hpp>
 #include <uORB/SubscriptionCallback.hpp>
 #include <uORB/topics/actuator_controls.h>
-#include <uORB/topics/airspeed.h>
+#include <uORB/topics/airspeed_validated.h>
 #include <uORB/topics/battery_status.h>
 #include <uORB/topics/control_allocator_status.h>
 #include <uORB/topics/parameter_update.h>
@@ -127,6 +128,7 @@ private:
 		MULTIROTOR = 0,
 		STANDARD_VTOL = 1,
 		TILTROTOR_VTOL = 2,
+		PLANE = 3
 	};
 
 	EffectivenessSource _effectiveness_source_id{EffectivenessSource::NONE};
@@ -147,7 +149,7 @@ private:
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
 
 	uORB::Subscription _battery_status_sub{ORB_ID(battery_status)};			/**< battery status subscription */
-	uORB::Subscription _airspeed_sub{ORB_ID(airspeed)};				/**< airspeed subscription */
+	uORB::Subscription _airspeed_sub{ORB_ID(airspeed_validated)};
 	uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
 
 	matrix::Vector3f _torque_sp;
@@ -162,6 +164,7 @@ private:
 	hrt_abstime _timestamp_sample{0};
 
 	DEFINE_PARAMETERS(
+		(ParamFloat<px4::params::FW_AIRSPD_TRIM>) _param_airspeed_ias_trim,
 		(ParamInt<px4::params::CA_AIRFRAME>) _param_ca_airframe,
 		(ParamInt<px4::params::CA_METHOD>) _param_ca_method,
 		(ParamBool<px4::params::CA_BAT_SCALE_EN>) _param_ca_bat_scale_en,
