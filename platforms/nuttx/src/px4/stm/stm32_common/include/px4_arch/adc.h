@@ -53,5 +53,13 @@
 #  define SYSTEM_ADC_BASE STM32_ADC1_BASE
 #endif
 
+#if defined(HAVE_IP_ADC_V1)
+#define ADC_CHANNEL_TEMPSENSOR 18
+#endif
+
+#if defined(HAVE_IP_ADC_V2)
+#define ADC_CHANNEL_TEMPSENSOR 16
+#endif
+
 #include <px4_platform/adc.h>
 
