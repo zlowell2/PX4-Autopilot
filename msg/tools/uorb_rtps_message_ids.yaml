@@ -331,6 +331,11 @@ rtps:
     id: 157
   - msg: airspeed_wind
     id: 158
+    receive: true
+    send: true
+    msg: pixy_vector
+    id: 159
+    receive: true
   ########## multi topics: begin ##########
   - msg: actuator_controls_0
     id: 170
