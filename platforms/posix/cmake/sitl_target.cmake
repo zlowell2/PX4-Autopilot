@@ -30,6 +30,15 @@ px4_add_git_submodule(TARGET git_jsbsim_bridge PATH "${PX4_SOURCE_DIR}/Tools/jsb
 
 # Add support for external project building
 include(ExternalProject)
+include(ProcessorCount)
+
+set(build_cores 1)
+
+ProcessorCount(N)
+if(N GREATER_EQUAL 4)
+	math(EXPR build_cores "${N} - 2")
+endif()
+message(STATUS "BUILDING SITL_TARGET WITH ${build_cores} CORES")
 
 # project to build sitl_gazebo if necessary
 ExternalProject_Add(sitl_gazebo
@@ -45,7 +54,7 @@ ExternalProject_Add(sitl_gazebo
 	USES_TERMINAL_BUILD true
 	EXCLUDE_FROM_ALL true
 	BUILD_ALWAYS 1
-	BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> -- -j18
+	BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> -- -j ${build_cores}
 )
 
 ExternalProject_Add(mavsdk_tests
