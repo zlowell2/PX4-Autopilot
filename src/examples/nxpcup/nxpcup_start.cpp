@@ -80,6 +80,24 @@ int race_thread_main(int argc, char **argv)
 	uORB::Publication<vehicle_control_mode_s>		_control_mode_pub{ORB_ID(vehicle_control_mode)};
 	struct vehicle_control_mode_s				_control_mode;
 
+	_control_mode.flag_armed = 0;
+    _control_mode.flag_external_manual_override_ok = 0;
+    _control_mode.flag_control_manual_enabled = 0;
+    _control_mode.flag_control_auto_enabled = 0;
+    _control_mode.flag_control_offboard_enabled = 0;
+    _control_mode.flag_control_rates_enabled = 0;
+    _control_mode.flag_control_attitude_enabled = 0;
+    _control_mode.flag_control_yawrate_override_enabled = 0;
+    _control_mode.flag_control_rattitude_enabled = 0;
+    _control_mode.flag_control_force_enabled = 0;
+    _control_mode.flag_control_acceleration_enabled = 0;
+    _control_mode.flag_control_velocity_enabled = 0;
+    _control_mode.flag_control_position_enabled = 0;
+    _control_mode.flag_control_altitude_enabled = 0;
+    _control_mode.flag_control_climb_rate_enabled = 0;
+    _control_mode.flag_control_termination_enabled = 0;
+    _control_mode.flag_control_fixed_hdg_enabled = 0;
+
 	uORB::Publication<vehicle_attitude_setpoint_s>		_att_sp_pub{ORB_ID(vehicle_attitude_setpoint)};
 	struct vehicle_attitude_setpoint_s			_att_sp;
 
@@ -89,9 +107,9 @@ int race_thread_main(int argc, char **argv)
 	pixy_sub.copy(&pixy);
 
 	/* Publication of uORB messages */
-	struct safety_s safety;
-	uORB::Subscription safety_sub{ORB_ID(safety)};		// Safety switch request for starting and stopping the racing
-	safety_sub.copy(&safety);
+	// struct safety_s safety;
+	// uORB::Subscription safety_sub{ORB_ID(safety)};		// Safety switch request for starting and stopping the racing
+	// safety_sub.copy(&safety);
 
 	/* Return motor control variables */
 	roverControl motorControl;
@@ -101,10 +119,10 @@ int race_thread_main(int argc, char **argv)
 	#endif
 
 	while (1) {
-		safety_sub.copy(&safety);				// request Safety swutch state
+		// safety_sub.copy(&safety);				// request Safety swutch state
 		pixy_sub.copy(&pixy);
 
-		switch (safety.safety_off) {
+		switch (1) {
 		case 0:
 			// Setting vehicle into the default state
 			_control_mode.flag_control_manual_enabled	= true;
