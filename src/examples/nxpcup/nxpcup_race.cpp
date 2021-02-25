@@ -135,6 +135,7 @@ roverControl raceTrack(pixy_vector_s &pixy)
 
 			// Calculate heading error with respect to m_x1, which is the far-end of the vector
 			control.steer = (float)(main_vec.m_x1 - window_center) / (float)frameWidth;
+			control.steer = control.steer / 2;
 
 			control.speed = SPEED_FAST;
 			break;
@@ -156,6 +157,7 @@ roverControl raceTrack(pixy_vector_s &pixy)
 		if(vec1.m_x0 != vec1.m_x1){
 			control.steer = (-1) * x / y; // Gradient of the main vector
 			control.speed = SPEED_NORMAL;
+			control.steer = control.steer / 2;
 		}else{
 			control.steer = 0.0;
 			control.speed = SPEED_SLOW;
