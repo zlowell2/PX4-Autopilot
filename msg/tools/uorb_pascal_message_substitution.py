@@ -44,7 +44,7 @@ for nonPascalMessage in os.listdir(messagesPath):
             print('\nRunning changes for: {:s} to {:s}'.format(
                     nonPascalBaseMessage, convertedPascalBaseMessage))
             for folder in changeFolders:
-                cmdGrep='grep -rli \'{:s}/{:s}\' -e "{:s}.h" *'.format(
+                cmdGrep='grep -rli \'{:s}/{:s}\' -e "{:s}.h"'.format(
                     changePath, folder, nonPascalBaseMessage)
                 cmdGrepPopen=shlex.split(cmdGrep)
                 grepPopen = subprocess.Popen(cmdGrepPopen, stdout=subprocess.PIPE, 
