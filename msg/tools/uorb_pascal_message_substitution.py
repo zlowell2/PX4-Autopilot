@@ -12,21 +12,43 @@ from string import capwords
 import os
 import sys
 from shutil import move
+import subprocess
+import shlex
 
+neverSetToTrue = False
 toolPath = os.path.dirname(os.path.abspath(__file__))
 messagesPath = os.path.abspath(os.path.join(toolPath, '../../msg'))
+changePath = os.path.abspath(os.path.join(toolPath,'../../../PX4-Autopilot'))
 
 nonPascalMessageList = list()
 convertedPascalMessageList = list()
 
 for nonPascalMessage in os.listdir(messagesPath):
     if ('.msg' in nonPascalMessage) and (nonPascalMessage.islower() or ('_' in nonPascalMessage)):
-        nonPascalBaseMessage=nonPascalMessage.replace(".msg", "")
+        nonPascalBaseMessage = nonPascalMessage.replace(".msg", "")
         nonPascalMessageList.append(nonPascalBaseMessage)
         
         convertedPascalBaseMessage = capwords(nonPascalBaseMessage.replace("_", " ")).replace(" ", "")
         convertedPascalMessageList.append(convertedPascalBaseMessage)
         
         move('{:s}/{:s}.msg'.format(messagesPath,nonPascalBaseMessage), 
-        	'{:s}/{:s}.msg'.format(messagesPath,convertedPascalBaseMessage))
+            '{:s}/{:s}.msg'.format(messagesPath,convertedPascalBaseMessage))
+
+        if neverSetToTrue:
+            cmdGrep='grep -rli \'{:s}/\' -e "{:s}.h" *'.format(changePath, nonPascalBaseMessage)
+            cmdGrepPopen=shlex.split(cmdGrep)
+            print('Running changes for: {:s} to {:s}'.format(nonPascalBaseMessage, convertedPascalBaseMessage))
+            grepPopen = subprocess.Popen(cmdGrepPopen, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            grepOut, grepErr = grepPopen.communicate()
+            grepPopen.wait()
+            grepOut=list(grepOut.split("\n"))
+
+            for modifyFile in grepOut:
+                if modifyFile != '':
+                    print('Modifying file: {:s}'.format(modifyFile))
+                    cmdSed='sed -i "s/{:s}/{:s}/g" {:s}'.format(nonPascalBaseMessage,convertedPascalBaseMessage,modifyFile)
+                    cmdSedPopen=shlex.split(cmdSed)
+                    sedPopen = subprocess.Popen(cmdSedPopen, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    sedOut, sedErr = sedPopen.communicate()
+                    sedPopen.wait()
 
