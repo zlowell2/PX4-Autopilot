@@ -19,6 +19,11 @@ neverSetToTrue = False
 toolPath = os.path.dirname(os.path.abspath(__file__))
 messagesPath = os.path.abspath(os.path.join(toolPath, '../../msg'))
 changePath = os.path.abspath(os.path.join(toolPath,'../../../PX4-Autopilot'))
+changeFolders = ['boards/', 'Documentation/', 'launch/',  
+                 'msg/', 'posix-configs/', 'src/', 
+                 'test_data/', 'validation/', 'cmake/', 
+                 'integrationtests/', 'mavlink/', 'platforms/', 
+                 'ROMFS/', 'test/', 'Tools/']
 
 nonPascalMessageList = list()
 convertedPascalMessageList = list()
@@ -28,27 +33,34 @@ for nonPascalMessage in os.listdir(messagesPath):
         nonPascalBaseMessage = nonPascalMessage.replace(".msg", "")
         nonPascalMessageList.append(nonPascalBaseMessage)
         
-        convertedPascalBaseMessage = capwords(nonPascalBaseMessage.replace("_", " ")).replace(" ", "")
+        convertedPascalBaseMessage = capwords(
+            nonPascalBaseMessage.replace("_", " ")).replace(" ", "")
         convertedPascalMessageList.append(convertedPascalBaseMessage)
         
         move('{:s}/{:s}.msg'.format(messagesPath,nonPascalBaseMessage), 
             '{:s}/{:s}.msg'.format(messagesPath,convertedPascalBaseMessage))
 
         if neverSetToTrue:
-            cmdGrep='grep -rli \'{:s}/\' -e "{:s}.h" *'.format(changePath, nonPascalBaseMessage)
-            cmdGrepPopen=shlex.split(cmdGrep)
-            print('Running changes for: {:s} to {:s}'.format(nonPascalBaseMessage, convertedPascalBaseMessage))
-            grepPopen = subprocess.Popen(cmdGrepPopen, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            grepOut, grepErr = grepPopen.communicate()
-            grepPopen.wait()
-            grepOut=list(grepOut.split("\n"))
+            print('\nRunning changes for: {:s} to {:s}'.format(
+                    nonPascalBaseMessage, convertedPascalBaseMessage))
+            for folder in changeFolders:
+                cmdGrep='grep -rli \'{:s}/{:s}\' -e "{:s}.h" *'.format(
+                    changePath, folder, nonPascalBaseMessage)
+                cmdGrepPopen=shlex.split(cmdGrep)
+                grepPopen = subprocess.Popen(cmdGrepPopen, stdout=subprocess.PIPE, 
+                    stderr=subprocess.PIPE, text=True)
+                grepOut, grepErr = grepPopen.communicate()
+                grepPopen.wait()
+                grepOut=list(grepOut.split("\n"))
 
-            for modifyFile in grepOut:
-                if modifyFile != '':
-                    print('Modifying file: {:s}'.format(modifyFile))
-                    cmdSed='sed -i "s/{:s}/{:s}/g" {:s}'.format(nonPascalBaseMessage,convertedPascalBaseMessage,modifyFile)
-                    cmdSedPopen=shlex.split(cmdSed)
-                    sedPopen = subprocess.Popen(cmdSedPopen, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-                    sedOut, sedErr = sedPopen.communicate()
-                    sedPopen.wait()
+                for modifyFile in grepOut:
+                    if modifyFile != '':
+                        print('Modifying file: {:s}'.format(modifyFile))
+                        cmdSed='sed -i "s/{:s}/{:s}/g" {:s}'.format(
+                            nonPascalBaseMessage,convertedPascalBaseMessage,modifyFile)
+                        cmdSedPopen=shlex.split(cmdSed)
+                        sedPopen = subprocess.Popen(cmdSedPopen, stdout=subprocess.PIPE, 
+                            stderr=subprocess.PIPE, text=True)
+                        sedOut, sedErr = sedPopen.communicate()
+                        sedPopen.wait()
 
