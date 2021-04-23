@@ -73,7 +73,7 @@ using namespace time_literals;
 #include "flashparams/flashparams.h"
 static const char *param_default_file = nullptr; // nullptr means to store to FLASH
 #else
-inline static int flash_param_save(bool only_unsaved, param_filter_func filter) { return -1; }
+inline static int flash_param_save(param_filter_func filter) { return -1; }
 inline static int flash_param_load() { return -1; }
 inline static int flash_param_import() { return -1; }
 static const char *param_default_file = PX4_ROOTFSDIR"/eeprom/parameters";
@@ -92,12 +92,12 @@ static constexpr uint16_t param_info_count = sizeof(px4::parameters) / sizeof(pa
 static px4::AtomicBitset<param_info_count> params_active;  // params found
 static px4::AtomicBitset<param_info_count> params_changed; // params non-default
 static px4::Bitset<param_info_count> params_custom_default; // params with runtime default value
+static px4::AtomicBitset<param_info_count> params_unsaved;
 
 // Storage for modified parameters.
 struct param_wbuf_s {
 	union param_value_u val;
 	param_t             param;
-	bool                unsaved;
 };
 
 /** flexible array holding modified parameter values */
@@ -414,12 +414,7 @@ bool param_is_volatile(param_t param)
 bool
 param_value_unsaved(param_t param)
 {
-	struct param_wbuf_s *s;
-	param_lock_reader();
-	s = param_find_changed(param);
-	bool ret = s && s->unsaved;
-	param_unlock_reader();
-	return ret;
+	return handle_in_range(param) ? params_unsaved[param] : false;
 }
 
 size_t param_size(param_t param)
@@ -741,9 +736,8 @@ param_set_internal(param_t param, const void *val, bool mark_saved, bool notify_
 		utarray_new(param_values, &param_icd);
 
 		// mark all parameters unchanged (default)
-		for (int i = 0; i < params_changed.size(); i++) {
-			params_changed.set(i, false);
-		}
+		params_changed.reset();
+		params_unsaved.reset();
 	}
 
 	if (param_values == nullptr) {
@@ -769,31 +763,41 @@ param_set_internal(param_t param, const void *val, bool mark_saved, bool notify_
 			s = param_find_changed(param);
 		}
 
-		if (s != nullptr) {
+		if (s == nullptr) {
+			PX4_ERR("error param_values storage slot invalid");
+
+		} else {
 			/* update the changed value */
 			switch (param_type(param)) {
 			case PARAM_TYPE_INT32:
-				param_changed = param_changed || s->val.i != *(int32_t *)val;
-				s->val.i = *(int32_t *)val;
-				s->unsaved = !mark_saved;
+				if (s->val.i != *(int32_t *)val) {
+					s->val.i = *(int32_t *)val;
+					param_changed = true;
+				}
+
 				params_changed.set(param, true);
+				params_unsaved.set(param, !mark_saved);
 				result = PX4_OK;
 				break;
 
 			case PARAM_TYPE_FLOAT:
-				param_changed = param_changed || fabsf(s->val.f - * (float *)val) > FLT_EPSILON;
-				s->val.f = *(float *)val;
-				s->unsaved = !mark_saved;
+				if (fabsf(s->val.f - * (float *)val) > FLT_EPSILON) {
+					s->val.f = *(float *)val;
+					param_changed = true;
+				}
+
 				params_changed.set(param, true);
+				params_unsaved.set(param, !mark_saved);
 				result = PX4_OK;
 				break;
 
 			default:
+				PX4_ERR("param_set invalid param type for %s", param_name(param));
 				break;
 			}
 		}
 
-		if ((result == PX4_OK) && !mark_saved) { // this is false when importing parameters
+		if ((result == PX4_OK) && param_changed && !mark_saved) { // this is false when importing parameters
 			param_autosave();
 		}
 	}
@@ -871,15 +875,13 @@ int param_set_default_value(param_t param, const void *val)
 		utarray_new(param_custom_default_values, &param_icd);
 
 		// mark all parameters unchanged (default)
-		for (int i = 0; i < params_custom_default.size(); i++) {
-			params_custom_default.set(i, false);
-		}
-	}
+		params_custom_default.reset();
 
-	if (param_custom_default_values == nullptr) {
-		PX4_ERR("failed to allocate custom default values array");
-		param_unlock_writer();
-		return PX4_ERROR;
+		if (param_custom_default_values == nullptr) {
+			PX4_ERR("failed to allocate custom default values array");
+			param_unlock_writer();
+			return PX4_ERROR;
+		}
 	}
 
 	// check if param being set to default value
@@ -891,7 +893,7 @@ int param_set_default_value(param_t param, const void *val)
 		break;
 
 	case PARAM_TYPE_FLOAT:
-		setting_to_static_default = (fabsf(px4::parameters[param].val.f - * (float *)val) < FLT_EPSILON);
+		setting_to_static_default = (fabsf(px4::parameters[param].val.f - * (float *)val) <= FLT_EPSILON);
 		break;
 	}
 
@@ -978,6 +980,7 @@ static int param_reset_internal(param_t param, bool notify = true)
 		}
 
 		params_changed.set(param, false);
+		params_unsaved.set(param, true);
 
 		param_found = true;
 	}
@@ -1004,9 +1007,7 @@ param_reset_all_internal(bool auto_save)
 	if (param_values != nullptr) {
 		utarray_free(param_values);
 
-		for (int i = 0; i < params_changed.size(); i++) {
-			params_changed.set(i, false);
-		}
+		params_changed.reset();
 	}
 
 	/* mark as reset / deleted */
@@ -1115,7 +1116,8 @@ int param_save_default()
 	if (!filename) {
 		param_lock_writer();
 		perf_begin(param_export_perf);
-		res = flash_param_save(false, nullptr);
+		res = flash_param_save(nullptr);
+		params_unsaved.reset();
 		perf_end(param_export_perf);
 		param_unlock_writer();
 		return res;
@@ -1128,7 +1130,7 @@ int param_save_default()
 		int fd = ::open(filename, O_WRONLY | O_CREAT, PX4_O_MODE_666);
 
 		if (fd > -1) {
-			res = param_export(fd, false, nullptr);
+			res = param_export(fd, nullptr);
 			::close(fd);
 
 			if (res != PX4_OK) {
@@ -1186,7 +1188,7 @@ param_load_default()
 }
 
 int
-param_export(int fd, bool only_unsaved, param_filter_func filter)
+param_export(int fd, param_filter_func filter)
 {
 	int	result = -1;
 	perf_begin(param_export_perf);
@@ -1194,7 +1196,8 @@ param_export(int fd, bool only_unsaved, param_filter_func filter)
 	if (fd < 0) {
 		param_lock_writer();
 		// flash_param_save() will take the shutdown lock
-		result = flash_param_save(only_unsaved, filter);
+		result = flash_param_save(filter);
+		params_unsaved.reset();
 		param_unlock_writer();
 		perf_end(param_export_perf);
 		return result;
@@ -1224,14 +1227,6 @@ param_export(int fd, bool only_unsaved, param_filter_func filter)
 	}
 
 	while ((s = (struct param_wbuf_s *)utarray_next(param_values, s)) != nullptr) {
-		/*
-		 * If we are only saving values changed since last save, and this
-		 * one hasn't, then skip it
-		 */
-		if (only_unsaved && !s->unsaved) {
-			continue;
-		}
-
 		if (filter && !filter(s->param)) {
 			continue;
 		}
@@ -1260,8 +1255,6 @@ param_export(int fd, bool only_unsaved, param_filter_func filter)
 			}
 			break;
 		}
-
-		s->unsaved = false;
 
 		const char *name = param_name(s->param);
 		const size_t size = param_size(s->param);
@@ -1300,7 +1293,12 @@ param_export(int fd, bool only_unsaved, param_filter_func filter)
 out:
 
 	if (result == 0) {
-		if (bson_encoder_fini(&encoder) != PX4_OK) {
+		if (bson_encoder_fini(&encoder) == PX4_OK) {
+			if (!filter) {
+				params_unsaved.reset();
+			}
+
+		} else {
 			PX4_ERR("BSON encoder finialize failed");
 			result = -1;
 		}
