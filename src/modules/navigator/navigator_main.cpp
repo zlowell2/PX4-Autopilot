@@ -82,8 +82,7 @@ Navigator::Navigator() :
 	_precland(this),
 	_rtl(this),
 	_engineFailure(this),
-	_gpsFailure(this),
-	_follow_target(this)
+	_gpsFailure(this)
 {
 	/* Create a list of our possible navigation types */
 	_navigation_mode_array[0] = &_mission;
@@ -94,7 +93,6 @@ Navigator::Navigator() :
 	_navigation_mode_array[5] = &_takeoff;
 	_navigation_mode_array[6] = &_land;
 	_navigation_mode_array[7] = &_precland;
-	_navigation_mode_array[8] = &_follow_target;
 
 	_handle_back_trans_dec_mss = param_find("VT_B_DEC_MSS");
 	_handle_reverse_delay = param_find("VT_B_REV_DEL");
@@ -399,6 +397,7 @@ Navigator::run()
 					// If one of them is non-finite set the current global position as target
 					rep->current.lat = get_global_position()->lat;
 					rep->current.lon = get_global_position()->lon;
+
 				}
 
 				rep->current.alt = cmd.param7;
@@ -652,11 +651,6 @@ Navigator::run()
 		case vehicle_status_s::NAVIGATION_STATE_AUTO_LANDGPSFAIL:
 			_pos_sp_triplet_published_invalid_once = false;
 			navigation_mode_new = &_gpsFailure;
-			break;
-
-		case vehicle_status_s::NAVIGATION_STATE_AUTO_FOLLOW_TARGET:
-			_pos_sp_triplet_published_invalid_once = false;
-			navigation_mode_new = &_follow_target;
 			break;
 
 		case vehicle_status_s::NAVIGATION_STATE_MANUAL:

@@ -64,6 +64,7 @@ px4_add_board(
 		esc_battery
 		events
 		flight_mode_manager
+		follow_target_estimator
 		fw_att_control
 		fw_pos_control_l1
 		gyro_calibration

@@ -62,6 +62,8 @@ void LoggedTopics::add_default_topics()
 	add_topic("cpuload");
 	add_topic("esc_status", 250);
 	add_topic("follow_target", 500);
+	add_topic("follow_target_status", 100);
+	add_topic("follow_target_estimator", 100);
 	add_topic("generator_status");
 	add_topic("heater_status");
 	add_topic("home_position");
