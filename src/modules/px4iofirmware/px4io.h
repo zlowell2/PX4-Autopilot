@@ -156,20 +156,6 @@ extern bool update_trims;
  */
 extern output_limit_t pwm_limit;
 
-/*
- * GPIO handling.
- */
-/* HEX Cube Orange and Cube Yellow uses an inverted signal to control the IMU heater */
-#ifdef CONFIG_ARCH_BOARD_CUBEPILOT_IO_V2
-#define LED_BLUE(_s)			px4_arch_gpiowrite(GPIO_LED1, (_s))
-#else
-#define LED_BLUE(_s)			px4_arch_gpiowrite(GPIO_LED1, !(_s))
-#endif
-#define LED_AMBER(_s)			px4_arch_gpiowrite(GPIO_LED2, !(_s))
-#define LED_SAFETY(_s)			px4_arch_gpiowrite(GPIO_LED3, !(_s))
-#define LED_RING(_s)			px4_arch_gpiowrite(GPIO_LED4, (_s))
-
-
 # define PX4IO_RELAY_CHANNELS		0
 # define ENABLE_SBUS_OUT(_s)		px4_arch_gpiowrite(GPIO_SBUS_OENABLE, !(_s))
 
