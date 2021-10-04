@@ -46,6 +46,7 @@ set EXTRA_MIXER_MODE none
 set RC_INPUT_ARGS ""
 set SDCARD_MIXERS_PATH /fs/microsd/etc/mixers
 set STARTUP_TUNE 1
+set STARTUP_TUNE_VOLUME ""
 set USE_IO no
 set VEHICLE_TYPE none
 
@@ -416,9 +417,9 @@ else
 	# Play the startup tune (if not disabled or there is an error)
 	#
 	param compare CBRK_BUZZER 782090
-	if [ $? != 0 -o $STARTUP_TUNE != 1 ]
+	if [ "$?" != "0" -o "$STARTUP_TUNE" != "1" ]
 	then
-		tune_control play -t $STARTUP_TUNE
+		tune_control play -t $STARTUP_TUNE $STARTUP_TUNE_VOLUME
 	fi
 
 	#
@@ -542,6 +543,7 @@ unset PWM_EXTRA_RATE
 unset RC_INPUT_ARGS
 unset SDCARD_MIXERS_PATH
 unset STARTUP_TUNE
+unset STARTUP_TUNE_VOLUME
 unset USE_IO
 unset VEHICLE_TYPE
 
