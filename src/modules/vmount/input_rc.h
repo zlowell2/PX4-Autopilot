@@ -61,7 +61,8 @@ public:
 	 * @param aux_channel_pitch
 	 * @param aux_channel_yaw
 	 */
-	InputRC(int aux_channel_roll, int aux_channel_pitch, int aux_channel_yaw);
+	InputRC(int aux_channel_roll, int aux_channel_pitch, int aux_channel_yaw, float mnt_rate_pitch, float mnt_rate_yaw,
+		int rc_in_mode);
 	virtual ~InputRC();
 
 	virtual void print_status();
@@ -81,6 +82,9 @@ protected:
 
 private:
 	int _aux_channels[3];
+	float _mnt_rate_pitch;
+	float _mnt_rate_yaw;
+	int _rc_in_mode;
 	int _manual_control_setpoint_sub = -1;
 
 	bool _first_time = true;

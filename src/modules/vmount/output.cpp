@@ -212,8 +212,6 @@ void OutputBase::_calculate_angle_output(const hrt_abstime &t)
 		euler_vehicle = matrix::Quatf(vehicle_attitude.q);
 	}
 
-	float dt = (t - _last_update) / 1.e6f;
-
 	matrix::Eulerf euler_gimbal = matrix::Quatf(_q_setpoint);
 
 	for (int i = 0; i < 3; ++i) {
@@ -223,7 +221,7 @@ void OutputBase::_calculate_angle_output(const hrt_abstime &t)
 		}
 
 		if (PX4_ISFINITE(_angle_velocity[i])) {
-			_angle_outputs[i] += dt * _angle_velocity[i];
+			_angle_outputs[i] = _angle_velocity[i];
 		}
 
 		if (compensate[i]) {
