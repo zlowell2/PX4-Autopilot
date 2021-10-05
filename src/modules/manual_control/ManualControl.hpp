@@ -128,6 +128,14 @@ private:
 	void publish_landing_gear(int8_t action);
 	void send_vtol_transition_command(uint8_t action);
 
+	enum class CameraMode {
+		Image = 0,
+		Video = 1
+	};
+	void send_camera_mode_command(CameraMode camera_mode);
+	void send_photo_command();
+	void send_video_command();
+
 	uORB::Publication<manual_control_setpoint_s> _manual_control_setpoint_pub{ORB_ID(manual_control_setpoint)};
 
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
@@ -177,5 +185,8 @@ private:
 		(ParamInt<px4::params::MAV_COMP_ID>) _param_mav_comp_id,
 		(ParamInt<px4::params::MAV_SYS_ID>) _param_mav_sys_id
 	)
+
+	unsigned _image_sequence {0};
+	bool _video_recording {false}; // TODO: hopefully there is a command soon to toggle without keeping state
 };
 } // namespace manual_control
