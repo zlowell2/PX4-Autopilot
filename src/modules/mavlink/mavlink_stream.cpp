@@ -92,7 +92,7 @@ MavlinkStream::update(const hrt_abstime &t)
 
 		if (t >= _last_sent + interval) {
 			if (send()) {
-				_last_sent = math::constrain(_last_sent + interval, t - interval, t);
+				_last_sent = math::max(_last_sent + interval, t - interval);
 				sent = true;
 			}
 		}
