@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# @name Kaiken
+#
+# @type Quadrotor x
+# @class Copter
+#
+# @maintainer ? <?@?.?>
+#
+
+# LED commands to companion module
+mavlink stream -r 50 -s DEBUG_VECT -d /dev/ttyS0
+

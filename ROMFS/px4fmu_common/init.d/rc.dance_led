@@ -1,0 +1,52 @@
+# DLED_PWM_PRESET:
+# 0: we expect led outputs to be configured by user anywhere else
+# 1: LED on MAIN 6-8
+# 2: LED on AUX 1-3
+
+if param compare DLED_PWM_PRESET 1
+then
+#
+# This is the mixer and config for RGB LED on MAIN 6-8.
+#
+	set MIXER quad_x_rgb
+	set MIXER_AUX none
+
+	set PWM_OUT 12345678
+
+	# PWM range
+	param set PWM_MAIN_MIN6 1
+	param set PWM_MAIN_MIN7 1
+	param set PWM_MAIN_MIN8 1
+
+	param set PWM_MAIN_MAX6 2450
+	param set PWM_MAIN_MAX7 2450
+	param set PWM_MAIN_MAX8 2450
+
+	param set PWM_MAIN_DIS6 1
+	param set PWM_MAIN_DIS7 1
+	param set PWM_MAIN_DIS8 1
+fi
+
+if param compare DLED_PWM_PRESET 2
+then
+#
+# This is the mixer and config for RGB LED on AUX 1-3.
+#
+	set MIXER_AUX rgb_led
+
+	set PWM_AUX_OUT 1234
+	set PWM_AUX_RATE 400
+
+	# PWM range
+	param set PWM_AUX_MIN1 1
+	param set PWM_AUX_MIN2 1
+	param set PWM_AUX_MIN3 1
+
+	param set PWM_AUX_MAX1 2450
+	param set PWM_AUX_MAX2 2450
+	param set PWM_AUX_MAX3 2450
+
+	param set PWM_AUX_DIS1 1
+	param set PWM_AUX_DIS2 1
+	param set PWM_AUX_DIS3 1
+fi

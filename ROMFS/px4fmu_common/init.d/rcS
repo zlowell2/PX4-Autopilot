@@ -180,7 +180,12 @@ else
 	# Needs to be started after the parameters are loaded (for CBRK_BUZZER).
 	#
 	tone_alarm start
+	
+	# Dance LED mixer and configuration presets
+	#
+	sh /etc/init.d/rc.dance_led
 
+	#
 	#
 	# Waypoint storage.
 	# REBOOTWORK this needs to start in parallel.
@@ -196,12 +201,24 @@ else
 	# Start the resource load monitor.
 	#
 	load_mon start
+	
+	# Delete a file created by driver enumeration
+	if param compare DRV_START_LOG 1
+	then
+		rm /fs/microsd/drivers_list.txt
+	fi
 
 	#
 	# Start system state indicator.
 	#
+	
+	if param compare DLED_TYPE 2
+	then
+		# if dancing using internal LED, disable default led control
+	else
 	rgbled start -X -q
 	rgbled_ncp5623c start -X -q
+	fi
 
 	#
 	# Set parameters and env variables for selected AUTOSTART.
@@ -271,6 +288,11 @@ else
 	#
 	# Check if PX4IO present and update firmware if needed.
 	# Assumption IOFW set to firmware file and IO_PRESENT = no
+	#
+	# Disable packet loss emulation on reboot
+	#
+	param set MAV_EMUL_LOSS 0
+
 	#
 
 	if [ -f $IOFW ]
@@ -463,6 +485,10 @@ else
 	then
 		bst start -X
 	fi
+		#
+	# DSS Dance module
+	#
+	dance start
 
 	if param compare -s IMU_GYRO_FFT_EN 1
 	then
